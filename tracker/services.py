@@ -3,8 +3,9 @@ from typing import List
 from TwitterAPI import TwitterAPI
 
 from django.conf import settings
+from django.db.models import Q
 
-from .models import TwitterUser
+from .models import Tweet, TwitterUser
 
 
 def connect_twitter_api() -> TwitterAPI:
@@ -32,3 +33,30 @@ def add_twitter_users(profile_names: List[str]) -> None:
                 )
 
         TwitterUser.objects.bulk_create(users)
+
+
+def get_user_tweets(user: TwitterUser) -> None:
+    """Fetch tweets from user"""
+    # Fetch existing tweets from user
+    twitter_api = connect_twitter_api()
+    tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets')
+
+    for tweet in tweets:
+        defaults = {
+            'content': tweet['text'],
+            'user': user,
+            'relevant_tokens': tweet['text'],
+        }
+        Tweet.objects.update_or_create(tweet_id=tweet['id'], defaults=defaults)
+
+
+def set_deleted_tweets(user: TwitterUser) -> None:
+    """Update status of deleted tweets"""
+    # Fetch existing tweets from user
+    twitter_api = connect_twitter_api()
+    tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets')
+    valid_tweet_ids = [tweet['id'] for tweet in tweets]
+
+    # Update status of tweet instances that are not on Twitter anymore
+    deleted_tweets = Tweet.objects.filter(Q(user=user) & ~Q(tweet_id__in=valid_tweet_ids))
+    deleted_tweets.update(deleted=True)
