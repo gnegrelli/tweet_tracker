@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from TwitterAPI import TwitterAPI
 
@@ -35,11 +35,11 @@ def add_twitter_users(profile_names: List[str]) -> None:
         TwitterUser.objects.bulk_create(users)
 
 
-def get_user_tweets(user: TwitterUser) -> None:
+def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
     """Fetch tweets from user"""
     # Fetch existing tweets from user
     twitter_api = connect_twitter_api()
-    tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets')
+    tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets', params=params)
 
     for tweet in tweets:
         defaults = {

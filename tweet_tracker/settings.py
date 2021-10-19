@@ -10,10 +10,25 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env(
+    DEBUG=(bool, False),
+    API_KEY=(str, ''),
+    API_KEY_SECRET=(str, ''),
+    ACCESS_TOKEN=(str, ''),
+    ACCESS_TOKEN_SECRET=(str, ''),
+    BEARER_TOKEN=(str, ''),
+)
+
+dotenv_file_path = os.path.join(BASE_DIR, '.env')
+environ.Env.read_env(dotenv_file_path)
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +40,7 @@ SECRET_KEY = 'django-insecure-fc027rme8hn5pqql_aq2@set3(7&zm9)t(1e&f-kx*v7$908em
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -125,3 +140,9 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+API_KEY = env('API_KEY')
+API_KEY_SECRET = env('API_KEY_SECRET')
+ACCESS_TOKEN = env('ACCESS_TOKEN')
+ACCESS_TOKEN_SECRET = env('ACCESS_TOKEN_SECRET')
+BEARER_TOKEN = env('BEARER_TOKEN')
