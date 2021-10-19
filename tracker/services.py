@@ -45,7 +45,6 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
         defaults = {
             'content': tweet['text'],
             'user': user,
-            'relevant_tokens': tweet['text'],
         }
         Tweet.objects.update_or_create(tweet_id=tweet['id'], defaults=defaults)
 

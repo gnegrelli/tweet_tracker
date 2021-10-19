@@ -1,4 +1,9 @@
+from nltk.corpus import stopwords
+from nltk.tokenize import TweetTokenizer
+from typing import List
+
 from django.db import models
+from django.utils.functional import cached_property
 
 
 class TwitterUser(models.Model):
@@ -21,7 +26,6 @@ class Tweet(models.Model):
     tweet_id = models.CharField(max_length=40)
     user = models.ForeignKey(TwitterUser, on_delete=models.CASCADE, related_name='tweets')
     content = models.CharField(max_length=400)
-    relevant_tokens = models.CharField(max_length=400)
     tweeted_at = models.DateTimeField(null=True, blank=True)
     deleted = models.BooleanField(default=False)
     likes = models.IntegerField(null=True, blank=True)
@@ -33,3 +37,12 @@ class Tweet(models.Model):
         max_len = 40
         ending = '...' if len(self.content) > max_len else ''
         return f'{self.user!s}: \"{self.content[:max_len]}{ending}\"'
+
+    @cached_property
+    def tokens(self) -> List[str]:
+        tokenizer = TweetTokenizer(preserve_case=False)
+        tokens = tokenizer.tokenize(self.content)
+
+        clean_tokens = [token for token in tokens if token not in stopwords.words('portuguese')]
+
+        return clean_tokens
