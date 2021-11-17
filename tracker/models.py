@@ -1,9 +1,10 @@
-from nltk.corpus import stopwords
-from nltk.tokenize import TweetTokenizer
 from typing import List
 
 from django.db import models
 from django.utils.functional import cached_property
+
+from .stopwords import stopwords
+from .tokenizer import CustomTokenizer
 
 
 class TwitterUser(models.Model):
@@ -40,9 +41,9 @@ class Tweet(models.Model):
 
     @cached_property
     def tokens(self) -> List[str]:
-        tokenizer = TweetTokenizer(preserve_case=False)
+        tokenizer = CustomTokenizer(preserve_case=False)
         tokens = tokenizer.tokenize(self.content)
 
-        clean_tokens = [token for token in tokens if token not in stopwords.words('portuguese')]
+        clean_tokens = [token for token in tokens if token not in stopwords]
 
         return clean_tokens
