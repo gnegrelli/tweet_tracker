@@ -37,14 +37,26 @@ def add_twitter_users(profile_names: List[str]) -> None:
 
 def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
     """Fetch tweets from user"""
-    # Fetch existing tweets from user
+    # Create API connector
     twitter_api = connect_twitter_api()
+
+    # Add tweet.fields for date of creation, likes and retweets into params
+    tweet_fields = {'created_at', 'public_metrics'}
+    if params is None:
+        params = {}
+    original_tweet_fields = set(params.get('tweet.fields', '').split(','))
+    params['tweet.fields'] = ','.join(original_tweet_fields.union(tweet_fields))
+
+    # Fetch existing tweets from user
     tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets', params=params)
 
     for tweet in tweets:
         defaults = {
-            'content': tweet['text'],
             'user': user,
+            'content': tweet['text'],
+            'tweeted_at': tweet['created_at'],
+            'likes': tweet['public_metrics']['like_count'],
+            'retweets': tweet['public_metrics']['retweet_count'],
         }
         Tweet.objects.update_or_create(tweet_id=tweet['id'], defaults=defaults)
 
