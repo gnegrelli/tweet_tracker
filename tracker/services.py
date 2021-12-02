@@ -50,17 +50,18 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
     params['tweet.fields'] = ','.join(original_tweet_fields.union(tweet_fields))
 
     # Fetch existing tweets from user
-    tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets', params=params)
+    response = twitter_api.request(f'users/:{user.twitter_id}/tweets', params=params)
 
-    for tweet in tweets:
-        defaults = {
-            'user': user,
-            'content': tweet['text'],
-            'tweeted_at': tweet['created_at'],
-            'likes': tweet['public_metrics']['like_count'],
-            'retweets': tweet['public_metrics']['retweet_count'],
-        }
-        Tweet.objects.update_or_create(tweet_id=tweet['id'], defaults=defaults)
+    if response.status_code == 200:
+        for tweet in response:
+            defaults = {
+                'user': user,
+                'content': tweet['text'],
+                'tweeted_at': tweet['created_at'],
+                'likes': tweet['public_metrics']['like_count'],
+                'retweets': tweet['public_metrics']['retweet_count'],
+            }
+            Tweet.objects.update_or_create(tweet_id=tweet['id'], defaults=defaults)
 
 
 def set_deleted_tweets(user: TwitterUser) -> None:
