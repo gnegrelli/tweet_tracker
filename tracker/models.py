@@ -44,6 +44,6 @@ class Tweet(models.Model):
         tokenizer = CustomTokenizer(preserve_case=False)
         tokens = tokenizer.tokenize(self.content)
 
-        clean_tokens = [token for token in tokens if token not in stopwords]
+        clean_tokens = [token.strip() for token in tokens if token not in stopwords and token.strip()]
 
         return clean_tokens
