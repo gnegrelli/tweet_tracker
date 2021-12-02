@@ -1,4 +1,6 @@
+import matplotlib.pyplot as plt
 from typing import List, Optional
+from wordcloud import WordCloud
 
 from TwitterAPI import TwitterAPI
 
@@ -76,3 +78,16 @@ def set_deleted_tweets(user: TwitterUser) -> None:
     # Update status of tweet instances that are not on Twitter anymore
     deleted_tweets = Tweet.objects.filter(Q(user=user) & ~Q(tweet_id__in=valid_tweet_ids))
     deleted_tweets.update(deleted=True)
+
+
+def build_user_wordcloud(user: TwitterUser) -> None:
+    """Create wordcloud based on tweets from user"""
+    user_tweets = Tweet.objects.filter(user=user)
+    tokens = []
+    for user_tweet in user_tweets:
+        tokens.extend(user_tweet.tokens)
+
+    wordcloud = WordCloud(background_color=None, mode='RGBA').generate(' '.join(tokens))
+    plt.imshow(wordcloud)
+    plt.axis('off')
+    plt.show()
