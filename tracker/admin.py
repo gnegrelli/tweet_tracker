@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from tracker.models import Tweet, TwitterUser
+from .forms import TweetForm
+from .models import Tweet, TwitterUser
 
 
 @admin.register(Tweet)
@@ -13,6 +14,9 @@ class TweetAdmin(admin.ModelAdmin):
         'retweets',
         'deleted'
     )
+    list_filter = ('user', 'deleted',)
+    search_fields = ('tweet_id',)
+    form = TweetForm
 
 
 @admin.register(TwitterUser)
