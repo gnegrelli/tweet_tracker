@@ -21,18 +21,20 @@ def add_twitter_users(profile_names: List[str]) -> None:
 
     profile_names = ','.join(profile_names)
 
-    response = twitter_api.request('users/by', params={'usernames': profile_names})
+    response = twitter_api.request(
+        'users/by',
+        params={'usernames': profile_names, 'user.fields': 'created_at,verified,public_metrics'}
+    )
 
     if response.status_code == 200:
-        users = []
-        existing_users = TwitterUser.objects.values_list('twitter_id', flat=True).distinct()
         for user in response:
-            if user['id'] not in existing_users:
-                users.append(
-                    TwitterUser(twitter_id=user['id'], username=user['username'], profile_name=user['name'])
-                )
-
-        TwitterUser.objects.bulk_create(users)
+            defaults = {
+                'profile_name': user['name'],
+                'verified': user['verified'],
+                'joined_at': user['created_at'],
+                'followers': user['public_metrics']['followers_count'],
+            }
+            Tweet.objects.update_or_create(twiter_id=user['id'], defaults=defaults)
 
 
 def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
