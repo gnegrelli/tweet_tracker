@@ -44,7 +44,9 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
     tweet_fields = {'created_at', 'public_metrics'}
     if params is None:
         params = {}
-    original_tweet_fields = set(params.get('tweet.fields', '').split(','))
+    original_tweet_fields = {
+        tweet_field.strip() for tweet_field in params.get('tweet.fields', '').split(',') if tweet_field.strip()
+    }
     params['tweet.fields'] = ','.join(original_tweet_fields.union(tweet_fields))
 
     # Fetch existing tweets from user
