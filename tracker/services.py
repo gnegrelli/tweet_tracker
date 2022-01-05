@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from typing import List, Optional
 from wordcloud import WordCloud
 
-from TwitterAPI import TwitterAPI
+from TwitterAPI import TwitterAPI, TwitterResponse
 
 from django.conf import settings
 from django.db.models import Q
@@ -39,7 +39,7 @@ def add_twitter_users(profile_names: List[str]) -> None:
             Tweet.objects.update_or_create(twiter_id=user['id'], defaults=defaults)
 
 
-def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
+def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> TwitterResponse:
     """Fetch tweets from user"""
     # Create API connector
     twitter_api = connect_twitter_api()
@@ -66,6 +66,27 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
                 'retweets': tweet['public_metrics']['retweet_count'],
             }
             Tweet.objects.update_or_create(tweet_id=tweet['id'], defaults=defaults)
+
+    return response
+
+
+def get_all_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
+    """Fetch all previous tweets from user (at least the ones available)"""
+    if params is None:
+        params = {}
+    params.update({'exclude': 'retweets'})
+
+    while True:
+        # Get id of oldest tweet stored in database
+        oldest_tweet = Tweet.objects.filter(user=user).order_by('tweet_id').first()
+        params['until_id'] = oldest_tweet.tweet_id if oldest_tweet is not None else None
+
+        # Get tweets older than oldest_tweet
+        response = get_user_tweets(user, params)
+
+        # Break if no additional tweet is retrieved
+        if response.status_code != 200 or not list(response):
+            break
 
 
 def set_deleted_tweets(user: TwitterUser) -> None:
