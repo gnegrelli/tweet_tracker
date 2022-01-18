@@ -18,7 +18,7 @@ def connect_twitter_api() -> TwitterAPI:
 
 
 def add_twitter_users(profile_names: List[str]) -> None:
-    """Add users to table TwitterUser"""
+    """Add users to TwitterUser table and its existing tweets to Tweet table"""
     twitter_api = connect_twitter_api()
 
     profile_names = ','.join(profile_names)
@@ -31,12 +31,16 @@ def add_twitter_users(profile_names: List[str]) -> None:
     if response.status_code == 200:
         for user in response:
             defaults = {
+                'username': user['username'],
                 'profile_name': user['name'],
                 'verified': user['verified'],
                 'joined_at': user['created_at'],
                 'followers': user['public_metrics']['followers_count'],
             }
-            Tweet.objects.update_or_create(twiter_id=user['id'], defaults=defaults)
+            user, _ = TwitterUser.objects.update_or_create(twitter_id=user['id'], defaults=defaults)
+
+            # Store all user tweets
+            get_all_user_tweets(user)
 
 
 def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> TwitterResponse:
@@ -75,11 +79,12 @@ def get_all_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> Non
     if params is None:
         params = {}
     params.update({'exclude': 'retweets'})
+    response = None
 
     while True:
         # Get id of oldest tweet stored in database
-        oldest_tweet = Tweet.objects.filter(user=user).order_by('tweet_id').first()
-        params['until_id'] = oldest_tweet.tweet_id if oldest_tweet is not None else None
+        last_tweet_id = list(response)[-1]['id'] if response is not None else None
+        params['until_id'] = last_tweet_id
 
         # Get tweets older than oldest_tweet
         response = get_user_tweets(user, params)
