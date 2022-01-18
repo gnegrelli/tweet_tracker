@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from django.db import models
@@ -5,6 +6,9 @@ from django.utils.functional import cached_property
 
 from .stopwords import stopwords
 from .tokenizer import CustomTokenizer
+
+
+RE_TWEET_PATTERN = r'^[@a-záàâãéèêíïóôõöúçñ].+'
 
 
 class TwitterUser(models.Model):
@@ -44,6 +48,9 @@ class Tweet(models.Model):
         tokenizer = CustomTokenizer(preserve_case=False)
         tokens = tokenizer.tokenize(self.content)
 
-        clean_tokens = [token.strip() for token in tokens if token not in stopwords and token.strip()]
+        clean_tokens = [
+            token.strip() for token in tokens if token not in stopwords and token.strip() and
+                                                 re.match(RE_TWEET_PATTERN, token)
+        ]
 
         return clean_tokens
