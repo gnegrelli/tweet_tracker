@@ -1,6 +1,7 @@
 celery~=5.1.2
 Django~=3.2.7
 django-environ~=0.7.0
+djangorestframework~=3.13.1
 matplotlib~=3.4.3
 nltk~=3.6.3
 TwitterAPI~=2.7.5
