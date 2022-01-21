@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from collections import Counter
 from typing import List, Optional
 from wordcloud import WordCloud
 
@@ -7,6 +8,7 @@ from TwitterAPI import TwitterAPI, TwitterResponse
 from django.conf import settings
 from django.db.models import Q
 
+from .exceptions import UnknownUser
 from .models import Tweet, TwitterUser
 
 
@@ -117,3 +119,15 @@ def build_user_wordcloud(user: TwitterUser) -> None:
     plt.imshow(wordcloud)
     plt.axis('off')
     plt.show()
+
+
+def user_wordcloud(username: str) -> dict:
+    user = TwitterUser.objects.filter(username=username)
+    if not user:
+        raise UnknownUser
+    user_tweets = Tweet.objects.filter(user=user[0])
+    tokens = Counter()
+    for tweet in user_tweets:
+        tokens.update(tweet.tokens)
+
+    return dict(tokens)
