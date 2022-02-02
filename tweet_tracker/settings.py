@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'tracker',
-    'frontend'
 ]
 
 MIDDLEWARE = [
