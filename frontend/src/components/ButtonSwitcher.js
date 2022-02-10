@@ -30,26 +30,16 @@ function MyIconButton({ image, onButtonClick }) {
         activeButton === image.title ? setIsButtonColored(true) : setIsButtonColored(false);
     }, [activeButton]);
 
-    function handleClickEvent(event) {
-        // const words = [
-        //     {
-        //         text: 'asdrubal',
-        //         value: 17,
-        //     },
-        // ];
-        // onButtonClick(words);
-        console.log(activeButton);
-        console.log(event.target.parentElement);
-        // console.log(event.target.offsetParent);
-        // console.log(event.target.offsetParent.value);
+    function handleClickEvent(imageTitle) {
+        imageTitle !== activeButton ? console.log('Update words') : null;
     }
 
 
     return (
         <IconButton
-            onClick={(event) => {
+            onClick={() => {
+                handleClickEvent(image.title);
                 setActiveButton(image.title);
-                handleClickEvent(event);
             }}
             onMouseEnter={() => setIsButtonColored(true)}
             onMouseLeave={() => activeButton === image.title || setIsButtonColored(false)}
