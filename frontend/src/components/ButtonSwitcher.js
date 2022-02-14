@@ -9,10 +9,10 @@ export default function ButtonSwitcher (props) {
     return (
         <ButtonContext.Provider value={[activeButton, setActiveButton]}>
             <Stack direction="row" spacing={1} >
-                {props.images.map((image) => (
+                {props.imageObjs.map((imageObj) => (
                     <MyIconButton
-                        key={image.title}
-                        image={image}
+                        key={imageObj.username}
+                        imageObj={imageObj}
                         onButtonClick={props.onButtonClick}
                     />
                 ))}
@@ -21,32 +21,33 @@ export default function ButtonSwitcher (props) {
     );
 }
 
-function MyIconButton({ image, onButtonClick }) {
+function MyIconButton({ imageObj, onButtonClick }) {
 
     const [ activeButton, setActiveButton ] = React.useContext(ButtonContext);
     const [ isButtonColored, setIsButtonColored ] = React.useState(false);
 
+    const username = imageObj.username;
+
     React.useEffect(() => {
-        activeButton === image.title ? setIsButtonColored(true) : setIsButtonColored(false);
+        activeButton === username ? setIsButtonColored(true) : setIsButtonColored(false);
     }, [activeButton]);
 
-    function handleClickEvent(imageTitle) {
-        imageTitle !== activeButton ? onButtonClick(imageTitle) : null;
+    function handleClickEvent() {
+        username !== activeButton ? onButtonClick(username) : null;
     }
-
 
     return (
         <IconButton
             onClick={() => {
-                handleClickEvent(image.title);
-                setActiveButton(image.title);
+                handleClickEvent();
+                setActiveButton(username);
             }}
             onMouseEnter={() => setIsButtonColored(true)}
-            onMouseLeave={() => activeButton === image.title || setIsButtonColored(false)}
+            onMouseLeave={() => activeButton === username || setIsButtonColored(false)}
         >
             <Avatar
-                value={image.title}
-                src={image.url}
+                value={username}
+                src={imageObj.imgUrl}
                 style={{
                     filter: isButtonColored ? 'none' : 'grayscale(1)',
                     width: "60px",
