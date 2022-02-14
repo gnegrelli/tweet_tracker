@@ -1,8 +1,10 @@
 import React from "react";
 import Head from 'next/head'
 import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import { TagCloud } from "react-tagcloud";
+import styles from '../styles/Home.module.css';
 import ButtonSwitcher from "../src/components/ButtonSwitcher";
+import http from "../src/http-common";
 
 const images = [
     {
@@ -28,12 +30,24 @@ export default function Home() {
     const [ wordCounter, setWordCounter ] = React.useState([]);
     const [ currentUser, setCurrentUser ] = React.useState('')
 
-    // function handleButtonClick(words) {
-    //     console.log('From index', words);
-    //     console.log(wordCounter);
-    //     setWordCounter(words);
-    //     console.log(wordCounter);
-    // }
+    function handleButtonClick(props) {
+        setCurrentUser(props);
+        getTweets(props)
+    }
+
+    function getTweets(props) {
+        http.get('/tracker/get-user-tweets/emicida')
+            .then(({ data }) => {
+                const tokens = data.tokens;
+                console.log('tokens', tokens);
+                const lista = Object.entries(tokens).map(([token, count]) => (
+                    {value: token, count: count}
+                ));
+                console.log('lista', lista.slice(0, 200));
+                setWordCounter(lista.slice(0, 500));
+            })
+            .catch((error) => console.log(error))
+    }
 
     return (
         <div className={styles.container}>
@@ -54,22 +68,27 @@ export default function Home() {
                     }
                 </p>
 
-                <ButtonSwitcher images={images} />
+                <div>
+                    <TagCloud tags={wordCounter} minSize={1} maxSize={50} shuffle={false} />
+                </div>
+
+
+                <ButtonSwitcher images={images} onButtonClick={handleButtonClick} />
 
             </main>
 
-            <footer className={styles.footer}>
-                <a
-                    href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Powered by{' '}
-                    <span className={styles.logo}>
-                        <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16}/>
-                    </span>
-                </a>
-            </footer>
+            {/*<footer className={styles.footer}>*/}
+            {/*    <a*/}
+            {/*        href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"*/}
+            {/*        target="_blank"*/}
+            {/*        rel="noopener noreferrer"*/}
+            {/*    >*/}
+            {/*        Powered by{' '}*/}
+            {/*        <span className={styles.logo}>*/}
+            {/*            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16}/>*/}
+            {/*        </span>*/}
+            {/*    </a>*/}
+            {/*</footer>*/}
         </div>
     )
 }
