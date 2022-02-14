@@ -13,7 +13,7 @@ export default function ButtonSwitcher (props) {
                     <MyIconButton
                         key={image.title}
                         image={image}
-                        // onButtonClick={props.onButtonClick}
+                        onButtonClick={props.onButtonClick}
                     />
                 ))}
             </Stack>
@@ -31,7 +31,7 @@ function MyIconButton({ image, onButtonClick }) {
     }, [activeButton]);
 
     function handleClickEvent(imageTitle) {
-        imageTitle !== activeButton ? console.log('Update words') : null;
+        imageTitle !== activeButton ? onButtonClick(imageTitle) : null;
     }
 
 
