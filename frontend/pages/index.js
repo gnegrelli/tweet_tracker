@@ -25,7 +25,8 @@ const images = [
 
 export default function Home() {
 
-    const [wordCounter, setWordCounter] = React.useState([]);
+    const [ wordCounter, setWordCounter ] = React.useState([]);
+    const [ currentUser, setCurrentUser ] = React.useState('')
 
     // function handleButtonClick(words) {
     //     console.log('From index', words);
@@ -46,10 +47,11 @@ export default function Home() {
                 <h1 className={styles.title}>
                     Tweet Tracker
                 </h1>
-
                 <p className={styles.description}>
-                    Get started by editing{' '}
-                    <code className={styles.code}>pages/index.js</code>
+                    {currentUser ?
+                        `Showing tweets made by ${currentUser}` :
+                        "Select user clicking on one of the buttons below"
+                    }
                 </p>
 
                 <ButtonSwitcher images={images} />
