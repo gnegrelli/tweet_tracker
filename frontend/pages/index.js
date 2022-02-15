@@ -60,10 +60,7 @@ export default function Home() {
                     }
                 </p>
 
-                <div>
-                    <TagCloud tags={wordCounter} minSize={1} maxSize={50} shuffle={false} />
-                </div>
-
+                <TagCloud tags={wordCounter} minSize={1} maxSize={50} shuffle={false} />
 
                 <ButtonSwitcher imageObjs={users} onButtonClick={handleButtonClick} />
 
