@@ -40,7 +40,7 @@
 }
 
 .description {
-  margin: 2% auto 5%;
+  margin: 5px 5px 10px;
   line-height: 1.1;
   font-size: 1.4rem;
 }
@@ -53,4 +53,10 @@
 .logo {
   height: 1em;
   margin-left: 0.5rem;
+}
+
+.tagcloud {
+  padding: 20px 50px 30px;
+  margin: 50px;
+  background: rgba(255, 255, 255, 0.22);
 }
