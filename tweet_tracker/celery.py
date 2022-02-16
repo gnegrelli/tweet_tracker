@@ -5,7 +5,7 @@ from celery import Celery
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tweet_tracker.settings')
 
-app = Celery('tweet_tracker', broker_url='redis://localhost:6379/0')
+app = Celery('tweet_tracker')
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
