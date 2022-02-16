@@ -56,11 +56,20 @@ export default function Home() {
                 <p className={styles.description}>
                     {currentUser ?
                         `Showing tweets made by @${currentUser}` :
-                        "Select user clicking on one of the buttons below"
+                        "Select user by clicking on one of the buttons below"
                     }
                 </p>
 
-                <TagCloud className={styles.tagcloud} tags={wordCounter} minSize={1} maxSize={50} shuffle={false} />
+                {wordCounter.length ?
+                    <TagCloud
+                        className={styles.tagcloud}
+                        tags={wordCounter}
+                        minSize={10}
+                        maxSize={30}
+                        shuffle={false}
+                    /> :
+                    <></>
+                }
 
                 <ButtonSwitcher imageObjs={users} onButtonClick={handleButtonClick} />
 
