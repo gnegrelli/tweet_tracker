@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from celery.schedules import crontab
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tweet_tracker.settings')
@@ -17,9 +18,12 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
-    'test': {
-        'task': 'tracker.tasks.test',
-        'schedule': 5,
+    'update_tweets': {
+        'task': 'fetch_new_tweets',
+        'schedule': 60,
+        'options': {
+            'expires': 30,
+        },
     },
 }
 
