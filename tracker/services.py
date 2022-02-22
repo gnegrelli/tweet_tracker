@@ -42,11 +42,11 @@ def add_twitter_users(profile_names: List[str]) -> None:
             user, _ = TwitterUser.objects.update_or_create(twitter_id=user['id'], defaults=defaults)
 
             # Store all user tweets
-            get_all_user_tweets(user)
+            get_user_tweets_paginated(user)
 
 
 def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> TwitterResponse:
-    """Fetch tweets from user"""
+    """Fetch tweets from user and store on database"""
     # Create API connector
     twitter_api = connect_twitter_api()
 
@@ -76,24 +76,19 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> Twitter
     return response
 
 
-def get_all_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
-    """Fetch all previous tweets from user (at least the ones available)"""
+def get_user_tweets_paginated(user: TwitterUser, params: Optional[dict] = None) -> None:
+    """Fetch tweets from user using pagination token"""
     if params is None:
         params = {}
-    params.update({'exclude': 'retweets'})
-    response = None
+    params.update({'exclude': 'retweets', 'max_results': 100})
+    response = get_user_tweets(user, params)
 
-    while True:
-        # Get id of oldest tweet stored in database
-        last_tweet_id = list(response)[-1]['id'] if response is not None else None
-        params['until_id'] = last_tweet_id
+    while 'next_token' in response.json()['meta'].keys():
+        # Get pagination token from response
+        params['pagination_token'] = response.json()['meta'].get('next_token')
 
-        # Get tweets older than oldest_tweet
+        # Get next page of tweets
         response = get_user_tweets(user, params)
-
-        # Break if no additional tweet is retrieved
-        if response.status_code != 200 or not list(response):
-            break
 
 
 def set_deleted_tweets(user: TwitterUser) -> None:
@@ -122,6 +117,7 @@ def build_user_wordcloud(user: TwitterUser) -> None:
 
 
 def user_wordcloud(username: str) -> dict:
+    """Crete a dictionary with tokens as keys and count as values"""
     user = TwitterUser.objects.filter(username=username)
     if not user:
         raise UnknownUser
