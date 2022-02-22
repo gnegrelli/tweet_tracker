@@ -163,4 +163,4 @@ ACCESS_TOKEN_SECRET = env('ACCESS_TOKEN_SECRET')
 BEARER_TOKEN = env('BEARER_TOKEN')
 
 CELERY_BROKER_URL = env('CELERY_BROKER_URL')
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
