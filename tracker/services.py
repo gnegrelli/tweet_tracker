@@ -1,7 +1,5 @@
-import matplotlib.pyplot as plt
 from collections import Counter
 from typing import List, Optional
-from wordcloud import WordCloud
 
 from TwitterAPI import TwitterAPI, TwitterResponse
 
@@ -110,6 +108,9 @@ def set_deleted_tweets(user: TwitterUser) -> None:
 
 def build_user_wordcloud(user: TwitterUser) -> None:
     """Create wordcloud based on tweets from user"""
+    import matplotlib.pyplot as plt
+    from wordcloud import WordCloud
+
     user_tweets = Tweet.objects.filter(user=user)
     tokens = []
     for user_tweet in user_tweets:
