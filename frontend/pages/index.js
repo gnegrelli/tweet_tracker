@@ -5,17 +5,7 @@ import { TagCloud } from "react-tagcloud";
 import styles from '../styles/Home.module.css';
 import ButtonSwitcher from "../src/components/ButtonSwitcher";
 import http from "../src/http-common";
-
-const users = [
-    {
-        username: 'gnegrelli_',
-        imgUrl: 'https://pbs.twimg.com/profile_images/1403410427095179265/NjkuumlX_400x400.jpg',
-    },
-    {
-        username: 'emicida',
-        imgUrl: 'https://pbs.twimg.com/profile_images/1467128299692433411/GkB6v6ky_400x400.jpg',
-    },
-]
+import users from "../../users.json";
 
 export default function Home() {
 
