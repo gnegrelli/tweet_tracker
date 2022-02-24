@@ -8,7 +8,7 @@ from .stopwords import stopwords
 from .tokenizer import CustomTokenizer
 
 
-RE_TWEET_PATTERN = r'^[@a-záàâãéèêíïóôõöúçñ].+'
+RE_TWEET_PATTERN = r'^[@a-záàâãéèêíïóôõöúçñ\d].+'
 
 
 class TwitterUser(models.Model):
@@ -49,8 +49,8 @@ class Tweet(models.Model):
         tokens = tokenizer.tokenize(self.content)
 
         clean_tokens = [
-            token.strip() for token in tokens if token not in stopwords and token.strip() and
-                                                 re.match(RE_TWEET_PATTERN, token)
+            token.strip() for token in tokens
+            if token.strip() not in stopwords and token.strip() and re.match(RE_TWEET_PATTERN, token)
         ]
 
         return clean_tokens
