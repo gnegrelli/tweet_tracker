@@ -26,5 +26,7 @@ class TwitterUserAdmin(admin.ModelAdmin):
         '__str__',
         'followers',
         'verified',
-        'joined_at'
+        'joined_at',
+        'tweets_stored',
     )
+    readonly_fields = ('tweets_stored',)

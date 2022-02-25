@@ -12,7 +12,7 @@ RE_TWEET_PATTERN = r'^[@a-záàâãéèêíïóôõöúçñ\d].+'
 
 
 class TwitterUser(models.Model):
-    """Information from Twitter user"""
+    """Information of Twitter user"""
     twitter_id = models.CharField(max_length=20)
     username = models.CharField(max_length=120)
     profile_name = models.CharField(max_length=120, null=True, blank=True)
@@ -24,6 +24,10 @@ class TwitterUser(models.Model):
 
     def __str__(self):
         return f'{self.profile_name} (@{self.username})'
+
+    @property
+    def tweets_stored(self) -> int:
+        return self.tweets.count()
 
 
 class Tweet(models.Model):
