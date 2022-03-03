@@ -1,3 +1,4 @@
+import re
 import matplotlib.pyplot as plt
 from collections import Counter
 from typing import List, Optional
@@ -11,6 +12,9 @@ from rest_framework import status
 
 from .exceptions import UnknownUser
 from .models import Tweet, TwitterUser
+
+
+TWEET_QUERY_SIZE = 100
 
 
 def connect_twitter_api() -> TwitterAPI:
@@ -81,7 +85,7 @@ def get_user_tweets_paginated(user: TwitterUser, params: Optional[dict] = None) 
     """Fetch tweets from user using pagination token"""
     if params is None:
         params = {}
-    params.update({'exclude': 'retweets', 'max_results': 100})
+    params.update({'exclude': 'retweets', 'max_results': TWEET_QUERY_SIZE})
     response = get_user_tweets(user, params)
 
     while 'next_token' in response.json()['meta'].keys():
@@ -94,14 +98,28 @@ def get_user_tweets_paginated(user: TwitterUser, params: Optional[dict] = None) 
 
 def set_deleted_tweets(user: TwitterUser) -> None:
     """Update status of deleted tweets"""
-    # Fetch existing tweets from user
+    # Fetch active tweets from user
     twitter_api = connect_twitter_api()
-    tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets')
-    valid_tweet_ids = [tweet['id'] for tweet in tweets]
+    active_user_tweets = user.tweets.filter(deleted=False).values_list('tweet_id', flat=True)
 
-    # Update status of tweet instances that are not on Twitter anymore
-    deleted_tweets = Tweet.objects.filter(Q(user=user) & ~Q(tweet_id__in=valid_tweet_ids))
-    deleted_tweets.update(deleted=True)
+    # Divide tweet ids in TWEET_QUERY_SIZE chunks
+    tweet_id_chunks = [
+        active_user_tweets[i:i + TWEET_QUERY_SIZE] for i in range(0, len(active_user_tweets), TWEET_QUERY_SIZE)
+    ]
+
+    for chunk in tweet_id_chunks:
+        # Fetch tweets in chunk from TwitterAPI
+        response = twitter_api.request(f'tweets', params={'ids': ','.join(chunk)})
+
+        # If any tweet id is missing, TwitterAPI returns a bad request status (400)
+        if response.status_code == status.HTTP_400_BAD_REQUEST:
+            # Get id of deleted tweets from response content
+            deleted_tweets = [
+                int(re.search(r'\[(\d+)\]', error['message']).group(1)) for error in response.json()['errors']
+            ]
+
+            # Set deleted attribute of tweets
+            Tweet.objects.filter(Q(user=user) & Q(tweet_id__in=deleted_tweets)).update(deleted=True)
 
 
 def build_user_wordcloud(user: TwitterUser) -> None:
