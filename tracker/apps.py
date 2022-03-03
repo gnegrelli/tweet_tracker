@@ -12,4 +12,5 @@ class TrackerConfig(AppConfig):
 
         from .services import add_twitter_users
 
-        add_twitter_users(settings.USERS)
+        if not settings.DEBUG:
+            add_twitter_users(settings.USERS)
