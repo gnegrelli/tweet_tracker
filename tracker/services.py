@@ -7,6 +7,7 @@ from TwitterAPI import TwitterAPI, TwitterResponse
 
 from django.conf import settings
 from django.db.models import Q
+from rest_framework import status
 
 from .exceptions import UnknownUser
 from .models import Tweet, TwitterUser
@@ -30,7 +31,7 @@ def add_twitter_users(profile_names: List[str]) -> None:
         params={'usernames': profile_names, 'user.fields': 'created_at,verified,public_metrics'}
     )
 
-    if response.status_code == 200:
+    if response.status_code == status.HTTP_200_OK:
         for user in response:
             defaults = {
                 'username': user['username'],
@@ -62,7 +63,7 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> Twitter
     # Fetch existing tweets from user
     response = twitter_api.request(f'users/:{user.twitter_id}/tweets', params=params)
 
-    if response.status_code == 200:
+    if response.status_code == status.HTTP_200_OK:
         for tweet in response:
             defaults = {
                 'user': user,
