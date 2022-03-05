@@ -1,4 +1,3 @@
-import re
 import matplotlib.pyplot as plt
 from collections import Counter
 from typing import List, Optional
@@ -98,8 +97,10 @@ def get_user_tweets_paginated(user: TwitterUser, params: Optional[dict] = None) 
 
 def set_deleted_tweets(user: TwitterUser) -> None:
     """Update status of deleted tweets"""
-    # Fetch active tweets from user
+    # Create API connector
     twitter_api = connect_twitter_api()
+
+    # Fetch active tweets from user
     active_user_tweets = user.tweets.filter(deleted=False).values_list('tweet_id', flat=True)
 
     # Divide tweet ids in TWEET_QUERY_SIZE chunks
@@ -107,19 +108,19 @@ def set_deleted_tweets(user: TwitterUser) -> None:
         active_user_tweets[i:i + TWEET_QUERY_SIZE] for i in range(0, len(active_user_tweets), TWEET_QUERY_SIZE)
     ]
 
+    deleted_tweets = []
     for chunk in tweet_id_chunks:
         # Fetch tweets in chunk from TwitterAPI
         response = twitter_api.request(f'tweets', params={'ids': ','.join(chunk)})
 
-        # If any tweet id is missing, TwitterAPI returns a bad request status (400)
-        if response.status_code == status.HTTP_400_BAD_REQUEST:
-            # Get id of deleted tweets from response content
-            deleted_tweets = [
-                int(re.search(r'\[(\d+)\]', error['message']).group(1)) for error in response.json()['errors']
-            ]
+        # Get id of deleted tweets from response content
+        if response.status_code == status.HTTP_200_OK:
+            deleted_tweets.extend(
+                int(error['resource_id']) for error in response.json().get('errors', [])
+            )
 
-            # Set deleted attribute of tweets
-            Tweet.objects.filter(Q(user=user) & Q(tweet_id__in=deleted_tweets)).update(deleted=True)
+    # Set deleted attribute to tru for removed tweets
+    Tweet.objects.filter(Q(user=user) & Q(tweet_id__in=deleted_tweets)).update(deleted=True)
 
 
 def build_user_wordcloud(user: TwitterUser) -> None:
@@ -140,7 +141,9 @@ def user_wordcloud(username: str) -> dict:
     user = TwitterUser.objects.filter(username=username)
     if not user:
         raise UnknownUser
+
     user_tweets = Tweet.objects.filter(user=user[0])
+
     tokens = Counter()
     for tweet in user_tweets:
         tokens.update(tweet.tokens)
