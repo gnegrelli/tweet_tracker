@@ -25,6 +25,10 @@ app.conf.beat_schedule = {
             'expires': 30,
         },
     },
+    'update_deleted_tweets': {
+        'task': 'update_deleted_tweets',
+        'schedule': crontab(hour=0, minute=0),
+    },
 }
 
 
