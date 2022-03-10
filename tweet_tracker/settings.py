@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import json
 import os
 from pathlib import Path
 
@@ -25,6 +26,7 @@ env = environ.Env(
     ACCESS_TOKEN=(str, ''),
     ACCESS_TOKEN_SECRET=(str, ''),
     BEARER_TOKEN=(str, ''),
+    CELERY_BROKER_URL=(str, ''),
 )
 
 dotenv_file_path = os.path.join(BASE_DIR, '.env')
@@ -54,8 +56,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'corsheaders',
+    'django_celery_beat',
 
     'tracker',
 ]
@@ -157,4 +161,10 @@ API_KEY = env('API_KEY')
 API_KEY_SECRET = env('API_KEY_SECRET')
 ACCESS_TOKEN = env('ACCESS_TOKEN')
 ACCESS_TOKEN_SECRET = env('ACCESS_TOKEN_SECRET')
-BEARER_TOKEN = env('BEARER_TOKEN')
+# BEARER_TOKEN = env('BEARER_TOKEN')
+
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+with open(os.path.join(BASE_DIR, 'users.json'), 'r') as file:
+    USERS = [user['username'] for user in json.load(file)]
