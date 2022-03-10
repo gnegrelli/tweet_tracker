@@ -1,7 +1,7 @@
-from nltk.corpus import stopwords as nltk_stopwords
+import nltk
 
 
-stopwords = nltk_stopwords.words('portuguese')
+stopwords = nltk.corpus.stopwords.words('portuguese')
 
 # Add punctuation to list of stopwords
 stopwords.extend([
