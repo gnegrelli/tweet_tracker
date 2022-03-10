@@ -5,9 +5,13 @@ from TwitterAPI import TwitterAPI, TwitterResponse
 
 from django.conf import settings
 from django.db.models import Q
+from rest_framework import status
 
 from .exceptions import UnknownUser
 from .models import Tweet, TwitterUser
+
+
+TWEET_QUERY_SIZE = 100
 
 
 def connect_twitter_api() -> TwitterAPI:
@@ -28,7 +32,7 @@ def add_twitter_users(profile_names: List[str]) -> None:
         params={'usernames': profile_names, 'user.fields': 'created_at,verified,public_metrics'}
     )
 
-    if response.status_code == 200:
+    if response.status_code == status.HTTP_200_OK:
         for user in response:
             defaults = {
                 'username': user['username'],
@@ -40,11 +44,11 @@ def add_twitter_users(profile_names: List[str]) -> None:
             user, _ = TwitterUser.objects.update_or_create(twitter_id=user['id'], defaults=defaults)
 
             # Store all user tweets
-            get_all_user_tweets(user)
+            get_user_tweets_paginated(user)
 
 
 def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> TwitterResponse:
-    """Fetch tweets from user"""
+    """Fetch tweets from user and store on database"""
     # Create API connector
     twitter_api = connect_twitter_api()
 
@@ -60,7 +64,7 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> Twitter
     # Fetch existing tweets from user
     response = twitter_api.request(f'users/:{user.twitter_id}/tweets', params=params)
 
-    if response.status_code == 200:
+    if response.status_code == status.HTTP_200_OK:
         for tweet in response:
             defaults = {
                 'user': user,
@@ -74,36 +78,47 @@ def get_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> Twitter
     return response
 
 
-def get_all_user_tweets(user: TwitterUser, params: Optional[dict] = None) -> None:
-    """Fetch all previous tweets from user (at least the ones available)"""
+def get_user_tweets_paginated(user: TwitterUser, params: Optional[dict] = None) -> None:
+    """Fetch tweets from user using pagination token"""
     if params is None:
         params = {}
-    params.update({'exclude': 'retweets'})
-    response = None
+    params.update({'exclude': 'retweets', 'max_results': TWEET_QUERY_SIZE})
+    response = get_user_tweets(user, params)
 
-    while True:
-        # Get id of oldest tweet stored in database
-        last_tweet_id = list(response)[-1]['id'] if response is not None else None
-        params['until_id'] = last_tweet_id
+    while 'next_token' in response.json()['meta'].keys():
+        # Get pagination token from response
+        params['pagination_token'] = response.json()['meta'].get('next_token')
 
-        # Get tweets older than oldest_tweet
+        # Get next page of tweets
         response = get_user_tweets(user, params)
-
-        # Break if no additional tweet is retrieved
-        if response.status_code != 200 or not list(response):
-            break
 
 
 def set_deleted_tweets(user: TwitterUser) -> None:
     """Update status of deleted tweets"""
-    # Fetch existing tweets from user
+    # Create API connector
     twitter_api = connect_twitter_api()
-    tweets = twitter_api.request(f'users/:{user.twitter_id}/tweets')
-    valid_tweet_ids = [tweet['id'] for tweet in tweets]
 
-    # Update status of tweet instances that are not on Twitter anymore
-    deleted_tweets = Tweet.objects.filter(Q(user=user) & ~Q(tweet_id__in=valid_tweet_ids))
-    deleted_tweets.update(deleted=True)
+    # Fetch active tweets from user
+    active_user_tweets = user.tweets.filter(deleted=False).values_list('tweet_id', flat=True)
+
+    # Divide tweet ids in TWEET_QUERY_SIZE chunks
+    tweet_id_chunks = [
+        active_user_tweets[i:i + TWEET_QUERY_SIZE] for i in range(0, len(active_user_tweets), TWEET_QUERY_SIZE)
+    ]
+
+    deleted_tweets = []
+    for chunk in tweet_id_chunks:
+        # Fetch tweets in chunk from TwitterAPI
+        response = twitter_api.request(f'tweets', params={'ids': ','.join(chunk)})
+
+        # Get id of deleted tweets from response content
+        if response.status_code == status.HTTP_200_OK:
+            deleted_tweets.extend(
+                int(error['resource_id']) for error in response.json().get('errors', [])
+            )
+
+    # Set deleted attribute to tru for removed tweets
+    Tweet.objects.filter(Q(user=user) & Q(tweet_id__in=deleted_tweets)).update(deleted=True)
 
 
 def build_user_wordcloud(user: TwitterUser) -> None:
@@ -123,10 +138,13 @@ def build_user_wordcloud(user: TwitterUser) -> None:
 
 
 def user_wordcloud(username: str) -> dict:
+    """Crete a dictionary with tokens as keys and count as values"""
     user = TwitterUser.objects.filter(username=username)
     if not user:
         raise UnknownUser
+
     user_tweets = Tweet.objects.filter(user=user[0])
+
     tokens = Counter()
     for tweet in user_tweets:
         tokens.update(tweet.tokens)

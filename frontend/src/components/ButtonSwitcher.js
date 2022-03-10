@@ -50,8 +50,8 @@ function MyIconButton({ imageObj, onButtonClick }) {
                 src={imageObj.imgUrl}
                 style={{
                     filter: isButtonColored ? 'none' : 'grayscale(1)',
-                    width: "60px",
-                    height: "60px",
+                    width: "65px",
+                    height: "65px",
                 }}
             />
         </IconButton>

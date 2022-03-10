@@ -12,7 +12,7 @@ RE_TWEET_PATTERN = r'^[@a-záàâãéèêíïóôõöúçñ].+'
 
 
 class TwitterUser(models.Model):
-    """Information from Twitter user"""
+    """Information of Twitter user"""
     twitter_id = models.CharField(max_length=20)
     username = models.CharField(max_length=120)
     profile_name = models.CharField(max_length=120, null=True, blank=True)
@@ -24,6 +24,10 @@ class TwitterUser(models.Model):
 
     def __str__(self):
         return f'{self.profile_name} (@{self.username})'
+
+    @property
+    def tweets_stored(self) -> int:
+        return self.tweets.count()
 
 
 class Tweet(models.Model):
@@ -49,8 +53,8 @@ class Tweet(models.Model):
         tokens = tokenizer.tokenize(self.content)
 
         clean_tokens = [
-            token.strip() for token in tokens if token not in stopwords and token.strip() and
-                                                 re.match(RE_TWEET_PATTERN, token)
+            token.strip() for token in tokens
+            if token.strip() not in stopwords and token.strip() and re.match(RE_TWEET_PATTERN, token)
         ]
 
         return clean_tokens
