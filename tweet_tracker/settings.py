@@ -27,6 +27,12 @@ env = environ.Env(
     ACCESS_TOKEN_SECRET=(str, ''),
     BEARER_TOKEN=(str, ''),
     CELERY_BROKER_URL=(str, ''),
+    SQL_ENGINE=(str, 'django.db.backends.sqlite3'),
+    SQL_DATABASE=(str, BASE_DIR / 'db.sqlite3'),
+    SQL_USER=(str, 'user'),
+    SQL_PASSWORD=(str, 'password'),
+    SQL_HOST=(str, 'localhost'),
+    SQL_PORT=(str, '5432'),
 )
 
 dotenv_file_path = os.path.join(BASE_DIR, '.env')
@@ -101,8 +107,12 @@ WSGI_APPLICATION = 'tweet_tracker.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': env('SQL_ENGINE'),
+        'NAME': env('SQL_DATABASE'),
+        'USER': env('SQL_USER'),
+        'PASSWORD': env('SQL_PASSWORD'),
+        'HOST': env('SQL_HOST'),
+        'PORT': env('SQL_PORT'),
     }
 }
 
