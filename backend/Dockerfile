@@ -11,9 +11,12 @@ RUN apk update \
 
 RUN pip install -q --upgrade pip
 
+COPY ./users.json ./
+
 COPY ./requirements.txt ./
+
 RUN pip install -q -r ./requirements.txt
 
 RUN python -m nltk.downloader -q -d /nltk_data stopwords
 
-COPY . .
+COPY ./backend .
