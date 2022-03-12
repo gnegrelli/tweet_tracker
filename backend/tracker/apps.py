@@ -11,6 +11,6 @@ class TrackerConfig(AppConfig):
         """Add/Update users every time backend starts"""
 
         from .services import add_twitter_users
-
         if not settings.DEBUG:
+            print('Adding users...')
             add_twitter_users(settings.USERS)
