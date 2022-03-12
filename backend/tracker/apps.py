@@ -1,3 +1,5 @@
+import sys
+
 from django.apps import AppConfig
 from django.conf import settings
 
@@ -9,6 +11,8 @@ class TrackerConfig(AppConfig):
 
     def ready(self):
         """Add/Update users every time backend starts"""
+        if 'migrate' in sys.argv:
+            return
 
         from .services import add_twitter_users
         if not settings.DEBUG:
