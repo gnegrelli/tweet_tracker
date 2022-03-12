@@ -20,3 +20,8 @@ RUN pip install -q -r ./requirements.txt
 RUN python -m nltk.downloader -q -d /nltk_data stopwords
 
 COPY ./backend .
+
+RUN sed -i 's/\r$//g' ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
