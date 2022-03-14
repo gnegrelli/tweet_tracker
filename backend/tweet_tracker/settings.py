@@ -35,7 +35,7 @@ env = environ.Env(
     SQL_PORT=(str, '5432'),
 )
 
-dotenv_file_path = os.path.join(BASE_DIR, '.env')
+dotenv_file_path = os.path.join(BASE_DIR.parent, '.env')
 environ.Env.read_env(dotenv_file_path)
 
 
@@ -176,5 +176,5 @@ ACCESS_TOKEN_SECRET = env('ACCESS_TOKEN_SECRET')
 CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 # CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-with open(os.path.join(BASE_DIR, 'users.json'), 'r') as file:
+with open(os.path.join(BASE_DIR.parent, 'users.json'), 'r') as file:
     USERS = [user['username'] for user in json.load(file)]
