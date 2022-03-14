@@ -1,15 +1,11 @@
 FROM node:16
 
+COPY ./users.json ./
+
 WORKDIR /frontend
 
-COPY ./package-lock.json ./package.json ./
+COPY ./frontend ./
 
-RUN npm ci
+RUN npm ci --quiet
 
-COPY . .
-
-RUN npm run build
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
+RUN npm run build --quiet

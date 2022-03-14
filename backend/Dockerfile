@@ -1,5 +1,7 @@
 FROM python:3.8.12-alpine
 
+COPY ./users.json ./
+
 WORKDIR /app
 
 ENV NLTK_DATA /nltk_data
@@ -10,8 +12,6 @@ RUN apk update \
     && apk add postgresql-dev gcc python3-dev musl-dev
 
 RUN pip install -q --upgrade pip
-
-COPY ./users.json ./
 
 COPY ./requirements.txt ./
 
