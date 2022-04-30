@@ -27,9 +27,15 @@ env = environ.Env(
     ACCESS_TOKEN_SECRET=(str, ''),
     BEARER_TOKEN=(str, ''),
     CELERY_BROKER_URL=(str, ''),
+    SQL_ENGINE=(str, 'django.db.backends.sqlite3'),
+    SQL_DATABASE=(str, BASE_DIR / 'db.sqlite3'),
+    SQL_USER=(str, 'user'),
+    SQL_PASSWORD=(str, 'password'),
+    SQL_HOST=(str, 'localhost'),
+    SQL_PORT=(str, '5432'),
 )
 
-dotenv_file_path = os.path.join(BASE_DIR, '.env')
+dotenv_file_path = os.path.join(BASE_DIR.parent, '.env')
 environ.Env.read_env(dotenv_file_path)
 
 
@@ -40,7 +46,7 @@ environ.Env.read_env(dotenv_file_path)
 SECRET_KEY = 'django-insecure-fc027rme8hn5pqql_aq2@set3(7&zm9)t(1e&f-kx*v7$908em'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['localhost']
 
@@ -101,8 +107,12 @@ WSGI_APPLICATION = 'tweet_tracker.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': env('SQL_ENGINE'),
+        'NAME': env('SQL_DATABASE'),
+        'USER': env('SQL_USER'),
+        'PASSWORD': env('SQL_PASSWORD'),
+        'HOST': env('SQL_HOST'),
+        'PORT': env('SQL_PORT'),
     }
 }
 
@@ -166,5 +176,5 @@ ACCESS_TOKEN_SECRET = env('ACCESS_TOKEN_SECRET')
 CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 # CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-with open(os.path.join(BASE_DIR, 'users.json'), 'r') as file:
+with open(os.path.join(BASE_DIR.parent, 'users.json'), 'r') as file:
     USERS = [user['username'] for user in json.load(file)]

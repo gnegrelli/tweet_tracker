@@ -1,0 +1,4 @@
+-r requirements.txt
+
+matplotlib~=3.4.3
+wordcloud~=1.8.1
